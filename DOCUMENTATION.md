@@ -59,9 +59,9 @@ int main()
 ### Constructors
 
 #### LASFile()
-Creates empty `LAS::LASFile` object with mandatory fields specified.
+- Creates empty `LAS::LASFile` object with mandatory fields specified.
 #### LASFile(const *std::string* path)
-Same as `LASFile()`, but takes the path of input file.
+- Same as `LASFile()`, but takes the path of input file.
 
 ### Read file, get its header info and version
 #### *void* read(const *std::string* path)
