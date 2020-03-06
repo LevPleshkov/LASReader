@@ -10,6 +10,34 @@ such as VERS, STRT or LIC.
 **LASFile** struct holds all the information that could be read from input file.
 
 
+## Example
+
+The following example programm creates a `LAS::LASFile` pointer through a constructor that takes 
+one argument `std::string path` and automatically reads the input file. Then the pointer is used to access
+data (value and unit) that correspond to 'STEP' mnemonic in the file, other information and index values.
+```c++
+int main()
+{
+    std::string path = ".../.../*.las";
+    
+    LAS::LASFile* lasFile = new LAS::LASFile(path);
+    
+    std::cout << lasFile->step().value << std::endl;
+    
+    std::cout << lasFile->step().unit << std::endl;
+    
+    std::cout << lasFile->other() std::endl;
+    
+    for (auto const& x : lasFile->index())
+        std::cout << x << std::endl;
+    
+    delete lasFile;
+    
+    return 0;
+}
+```
+
+
 
 ## struct Parameter
 
@@ -29,22 +57,26 @@ such as VERS, STRT or LIC.
 ## struct LASFile
 
 ### Constructors
-#### LASFile()
-- Creates empty LASFile object with mandatory fields specified.
-#### LASFile(const *std::string* path)
-- Same as LASFile(), but takes the path of input file.
+
+`LASFile()`
+
+Creates empty `LAS::LASFile` object with mandatory fields specified.
+
+`LASFile(const *std::string* path)`
+
+Same as `LASFile()`, but takes the path of input file.
 
 ### Read file, get its header info and version
 #### *void* read(const *std::string* path)
-- Reads the contents of file specified by **path** into LASFile object on which it was called.
+- Reads the contents of file specified by `path` into `LAS::LASFile` object on which it was called.
 #### *void* info()
 - Outputs the header of las file into console.
 #### *std::string* version()
-- Returns the value of **Parameter** with mnemonic 'VERS'.
+- Returns the value of `Parameter` with mnemonic 'VERS'.
 
 ### Access the mandatory and optional parameters from section '~Well Information'
 These functions take no arguments and return value of type is LAS::Parameter, whose fields can be accessed via '.' 
-operator like this: **lasFile.srart().unit** or **lasFile.null().value**, where **lasFile** is an object of type LAS::LASFile.
+operator like this: `lasFile.srart().unit` or `lasFile.null().value`, where `lasFile` is an object of type `LAS::LASFile`.
 #### *LAS::Parameter* start()
 #### *LAS::Parameter* stop()
 #### *LAS::Parameter* step()
