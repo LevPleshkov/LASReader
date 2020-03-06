@@ -9,3 +9,4 @@ Todo list:
 
 - [ ] read data from files with wrapped mode
 - [ ] read version 3.0 files
+- [ ] add exception handling
