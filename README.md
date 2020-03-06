@@ -7,6 +7,7 @@ Currently there are three versions of LAS: 1.2, 2.0 and 3.0. The LASReader shoul
 
 Todo list:
 
+- [ ] implement `info()` function
 - [ ] read data from files with wrapped mode
 - [ ] read version 3.0 files
 - [ ] add exception handling
