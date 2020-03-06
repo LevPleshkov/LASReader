@@ -106,4 +106,4 @@ operator like this: `lasFile.srart().unit` or `lasFile.null().value`, where `las
 #### *std::vector\<float>* index()
 - Returns the list of index values.
 #### *std::vector\<std::vector\<float>>* data()
-- Returns the 2D list of all data values corresponfing to their index values.  Size of first dimention of **data** is the same as size of **index**.
+- Returns the 2D list of all data values corresponfing to their index values.  Size of first dimension of `data()` return value is the same as size of `index()` return value.
