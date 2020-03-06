@@ -241,7 +241,7 @@ void LAS::LASFile::info() const
 
 std::string LAS::LASFile::version() const
 {
-    if (haveRead)
+    if (haveRead && _well.find("VERS") != _well.end())
         return _version.at("VERS").value;
     else
         return "";
@@ -249,7 +249,7 @@ std::string LAS::LASFile::version() const
 
 LAS::Parameter LAS::LASFile::start() const
 {
-    if (haveRead)
+    if (haveRead && _well.find("STRT") != _well.end())
         return _well.at("STRT");
     else
         return LAS::Parameter();
@@ -257,7 +257,7 @@ LAS::Parameter LAS::LASFile::start() const
 
 LAS::Parameter LAS::LASFile::stop() const
 {
-    if (haveRead)
+    if (haveRead && _well.find("STOP") != _well.end())
         return _well.at("STOP");
     else
         return LAS::Parameter();
@@ -265,7 +265,7 @@ LAS::Parameter LAS::LASFile::stop() const
 
 LAS::Parameter LAS::LASFile::step() const
 {
-    if (haveRead)
+    if (haveRead && _well.find("STEP") != _well.end())
         return _well.at("STEP");
     else
         return LAS::Parameter();
@@ -273,7 +273,7 @@ LAS::Parameter LAS::LASFile::step() const
 
 LAS::Parameter LAS::LASFile::null() const
 {
-    if (haveRead)
+    if (haveRead && _well.find("NULL") != _well.end())
         return _well.at("NULL");
     else
         return LAS::Parameter();
