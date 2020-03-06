@@ -72,7 +72,7 @@ Same as `LASFile()`, but takes the path of input file.
 - Returns the value of `Parameter` with mnemonic 'VERS'.
 
 ### Access the mandatory and optional parameters from section '~Well Information'
-These functions take no arguments and return value of type is LAS::Parameter, whose fields can be accessed via '.' 
+These functions take no arguments and return value of type is `LAS::Parameter`, whose fields can be accessed via `.` 
 operator like this: `lasFile.srart().unit` or `lasFile.null().value`, where `lasFile` is an object of type `LAS::LASFile`.
 #### *LAS::Parameter* start()
 #### *LAS::Parameter* stop()
