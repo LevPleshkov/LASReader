@@ -39,7 +39,7 @@ int main()
 
 
 
-## struct Parameter
+## struct LAS::Parameter
 
 ### Public properties
 #### *std::string* name
@@ -54,7 +54,7 @@ int main()
 
 
 
-## struct LASFile
+## struct LAS::LASFile
 
 ### Constructors
 
