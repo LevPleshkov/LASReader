@@ -3,7 +3,6 @@
 //  las reader
 //
 //  Created by Lev Pleshkov on 27.02.2020.
-//  Copyright © 2020 Lev Pleshkov. All rights reserved.
 //
 
 #include "LAS.hpp"
