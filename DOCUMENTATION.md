@@ -71,9 +71,10 @@ int main()
 #### *std::string* version()
 - Returns the value of `Parameter` with mnemonic 'VERS'.
 
-### Access the mandatory and optional parameters from section '~Well Information'
+### Access the mandatory and optional parameters from sections '~Version Information' and '~Well Information'
 These functions take no arguments and return value of type is `LAS::Parameter`, whose fields can be accessed via `.` 
 operator like this: `lasFile.srart().unit` or `lasFile.null().value`, where `lasFile` is an object of type `LAS::LASFile`.
+#### *LAS::Parameter* created()
 #### *LAS::Parameter* start()
 #### *LAS::Parameter* stop()
 #### *LAS::Parameter* step()
