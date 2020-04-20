@@ -11,8 +11,9 @@
 #include <math.h>
 
 
-namespace LAS
-{
+struct Parameter;
+struct LASFile;
+
 
 struct Parameter
 {
@@ -25,6 +26,7 @@ struct Parameter
     std::string description;
 
 private:
+    int order = 0;
     bool set = false;
     bool required = false;
     friend struct LASFile;
@@ -79,7 +81,9 @@ private:
 
     Section section = Section::UNDEFINED;
 
-    // Helper functions
+    int current_order;
+
+    // Utility functions
     void parse_parameter(const std::string&, std::map<std::string, Parameter>&);
     void parse_other(const std::string&);
     void parse_data(const std::string&);
@@ -117,6 +121,5 @@ private:
 
 };
 
-}
 
 #endif // LAS_H

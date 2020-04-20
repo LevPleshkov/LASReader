@@ -1,5 +1,3 @@
-#include "las.h"
-
 //
 //  LAS.cpp
 //  las reader
@@ -10,17 +8,17 @@
 #include "las.h"
 
 
-LAS::Parameter::Parameter()                     { }
-LAS::Parameter::Parameter(bool r) : required(r) { }
+Parameter::Parameter()                     { }
+Parameter::Parameter(bool r) : required(r) { }
 
 
-LAS::LASFile::LASFile()                         {             }
-LAS::LASFile::LASFile(const std::string& path)  { read(path); }
+LASFile::LASFile()                         {             }
+LASFile::LASFile(const std::string& path)  { read(path); }
 
 
 // reads file line by line, passing it each time to corresponding parsing function
 // depending on in what file section current line is
-void LAS::LASFile::read(const std::string& path)
+void LASFile::read(const std::string& path)
 {
     if (!correct_extension(path))
     {
@@ -44,13 +42,13 @@ void LAS::LASFile::read(const std::string& path)
             while (std::isspace(line.front()))
                 line.erase(line.begin());
 
-            if      (line.find("#" ) == 0) ; //section = COMMENT;
-            else if (line.find("~V") == 0) section = Section::VERSION;
-            else if (line.find("~W") == 0) section = Section::WELL;
-            else if (line.find("~C") == 0) section = Section::CURVE;
-            else if (line.find("~P") == 0) section = Section::PARAMETERS;
-            else if (line.find("~O") == 0) section = Section::OTHER;
-            else if (line.find("~A") == 0) section = Section::ASCII;
+            if      (line.find("#" ) == 0) { ; }//section = COMMENT; }
+            else if (line.find("~V") == 0) { section = Section::VERSION;    current_order = 0; }
+            else if (line.find("~W") == 0) { section = Section::WELL;       current_order = 0; }
+            else if (line.find("~C") == 0) { section = Section::CURVE;      current_order = 0; }
+            else if (line.find("~P") == 0) { section = Section::PARAMETERS; current_order = 0; }
+            else if (line.find("~O") == 0) { section = Section::OTHER;                         }
+            else if (line.find("~A") == 0) { section = Section::ASCII;                         }
             else    // continue with current section
                     // and try to parse the line
 
@@ -75,11 +73,13 @@ void LAS::LASFile::read(const std::string& path)
 
         // set the state
         have_read = true;
+
+        //std::clog << "File read" << std::endl;
     }
 }
 
 // parses line for similar sections ~V, ~W, ~C, ~P
-void LAS::LASFile::parse_parameter(const std::string& l, std::map<std::string, Parameter>& m)
+void LASFile::parse_parameter(const std::string& l, std::map<std::string, Parameter>& m)
 {
     // locate delimiters in line
     size_t dot = l.find_first_of('.');                     // first occurence of '.'
@@ -99,15 +99,16 @@ void LAS::LASFile::parse_parameter(const std::string& l, std::map<std::string, P
     m[mn].unit = un;
     m[mn].value = va;
     m[mn].description = de;
+    m[mn].order = current_order++;
 
     m[mn].set = true;
 }
 
 // parses line for section ~O
-void LAS::LASFile::parse_other(const std::string& l) { _other.append(l); }
+void LASFile::parse_other(const std::string& l) { _other.append(l); }
 
 // parses line for section ~A
-void LAS::LASFile::parse_data(const std::string& l)
+void LASFile::parse_data(const std::string& l)
 {
     std::stringstream stream(l);
     float first; // index value
@@ -134,7 +135,7 @@ void LAS::LASFile::parse_data(const std::string& l)
 }
 
 // crops colon and whitespaces of string
-std::string LAS::LASFile::prepare(std::string str) const
+std::string LASFile::prepare(std::string str) const
 {
     if (str.size() > 0)
     {
@@ -152,7 +153,7 @@ std::string LAS::LASFile::prepare(std::string str) const
 }
 
 // determines file mode
-bool LAS::LASFile::wrapped() const
+bool LASFile::wrapped() const
 {
     if      (_version.at("WRAP").value == "NO" ) return false;
     else if (_version.at("WRAP").value == "YES") return true;
@@ -164,7 +165,7 @@ bool LAS::LASFile::wrapped() const
 }
 
 // performs check and gives warnings, doesn't exit the program
-void LAS::LASFile::validate() const
+void LASFile::validate() const
 {
     // requred fields are in place
     for (auto const& m : _version)
@@ -197,31 +198,28 @@ void LAS::LASFile::validate() const
 }
 
 // ckecks if input file's extension is "las" (case insensitive)
-bool LAS::LASFile::correct_extension(const std::string& path) const
+bool LASFile::correct_extension(const std::string& path) const
 {
     std::string ext = path.substr(path.rfind('.') + 1);
-    std::transform(ext.begin(), ext.end(), ext.begin(),
-                   [](unsigned char c){ return std::tolower(c); }
-                  );
-
+    std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){ return std::tolower(c); });
     return (ext.substr(0, 3) == "las") ? true : false;
 }
 
 // ckecks if the input values difference is constant
-bool LAS::LASFile::consistent_index() const
+bool LASFile::consistent_index() const
 {
     const float step = std::next(_data.begin())->first - _data.begin()->first;
     // whoo-hoo..
     for (auto i = ++(_data.begin()); i != --(_data.end()); i++)
         if (abs(step - ((++i)->first - (--i)->first)) > INDEX_PRECISION)
         {
-            std::cerr << step << ":" << i->first << std::endl;
+            //std::cerr << step << ":" << i->first << std::endl;
             return false;
         }
     return true;
 }
 
-void LAS::LASFile::info() const
+void LASFile::info() const
 {
     // ...
 }
@@ -231,55 +229,57 @@ void LAS::LASFile::info() const
 
 // if file is read...
 // - return version value if there is a key "VERS", otherwise return empty string
-std::string    LAS::LASFile::version()  const { return (have_read && _version.find("VERS") != _version.end()) ? _version.at("VERS").value : ""; }
+std::string LASFile::version()  const { return (have_read && _version.find("VERS") != _version.end()) ? _version.at("VERS").value : ""; }
 // - return Parameter value if there is such key, otherwise return empty parameter
-LAS::Parameter LAS::LASFile::created()  const { return (have_read && _version.find("CREA") != _version.end()) ? _version.at("CREA") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::start()    const { return (have_read && _well.find("STRT") != _well.end()) ? _well.at("STRT") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::stop()     const { return (have_read && _well.find("STOP") != _well.end()) ? _well.at("STOP") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::step()     const { return (have_read && _well.find("STEP") != _well.end()) ? _well.at("STEP") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::null()     const { return (have_read && _well.find("NULL") != _well.end()) ? _well.at("NULL") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::company()  const { return (have_read && _well.find("COMP") != _well.end()) ? _well.at("COMP") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::well()     const { return (have_read && _well.find("WELL") != _well.end()) ? _well.at("WELL") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::field()    const { return (have_read && _well.find("FLD" ) != _well.end()) ? _well.at("FLD" ) : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::location() const { return (have_read && _well.find("LOC" ) != _well.end()) ? _well.at("LOC" ) : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::province() const { return (have_read && _well.find("PROV") != _well.end()) ? _well.at("PROV") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::county()   const { return (have_read && _well.find("CNTY") != _well.end()) ? _well.at("CNTY") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::state()    const { return (have_read && _well.find("STAT") != _well.end()) ? _well.at("STAT") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::country()  const { return (have_read && _well.find("CTRY") != _well.end()) ? _well.at("CTRY") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::service()  const { return (have_read && _well.find("SRVC") != _well.end()) ? _well.at("SRVC") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::date()     const { return (have_read && _well.find("DATE") != _well.end()) ? _well.at("DATE") : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::uwi()      const { return (have_read && _well.find("UWI" ) != _well.end()) ? _well.at("UWI" ) : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::api()      const { return (have_read && _well.find("API" ) != _well.end()) ? _well.at("API" ) : LAS::Parameter(); }
-LAS::Parameter LAS::LASFile::licence()  const { return (have_read && _well.find("LIC" ) != _well.end()) ? _well.at("LIC" ) : LAS::Parameter(); }
+Parameter   LASFile::created()  const { return (have_read && _version.find("CREA") != _version.end()) ? _version.at("CREA") : Parameter(); }
+Parameter   LASFile::start()    const { return (have_read && _well.find("STRT") != _well.end()) ? _well.at("STRT") : Parameter(); }
+Parameter   LASFile::stop()     const { return (have_read && _well.find("STOP") != _well.end()) ? _well.at("STOP") : Parameter(); }
+Parameter   LASFile::step()     const { return (have_read && _well.find("STEP") != _well.end()) ? _well.at("STEP") : Parameter(); }
+Parameter   LASFile::null()     const { return (have_read && _well.find("NULL") != _well.end()) ? _well.at("NULL") : Parameter(); }
+Parameter   LASFile::company()  const { return (have_read && _well.find("COMP") != _well.end()) ? _well.at("COMP") : Parameter(); }
+Parameter   LASFile::well()     const { return (have_read && _well.find("WELL") != _well.end()) ? _well.at("WELL") : Parameter(); }
+Parameter   LASFile::field()    const { return (have_read && _well.find("FLD" ) != _well.end()) ? _well.at("FLD" ) : Parameter(); }
+Parameter   LASFile::location() const { return (have_read && _well.find("LOC" ) != _well.end()) ? _well.at("LOC" ) : Parameter(); }
+Parameter   LASFile::province() const { return (have_read && _well.find("PROV") != _well.end()) ? _well.at("PROV") : Parameter(); }
+Parameter   LASFile::county()   const { return (have_read && _well.find("CNTY") != _well.end()) ? _well.at("CNTY") : Parameter(); }
+Parameter   LASFile::state()    const { return (have_read && _well.find("STAT") != _well.end()) ? _well.at("STAT") : Parameter(); }
+Parameter   LASFile::country()  const { return (have_read && _well.find("CTRY") != _well.end()) ? _well.at("CTRY") : Parameter(); }
+Parameter   LASFile::service()  const { return (have_read && _well.find("SRVC") != _well.end()) ? _well.at("SRVC") : Parameter(); }
+Parameter   LASFile::date()     const { return (have_read && _well.find("DATE") != _well.end()) ? _well.at("DATE") : Parameter(); }
+Parameter   LASFile::uwi()      const { return (have_read && _well.find("UWI" ) != _well.end()) ? _well.at("UWI" ) : Parameter(); }
+Parameter   LASFile::api()      const { return (have_read && _well.find("API" ) != _well.end()) ? _well.at("API" ) : Parameter(); }
+Parameter   LASFile::licence()  const { return (have_read && _well.find("LIC" ) != _well.end()) ? _well.at("LIC" ) : Parameter(); }
 // - return other information text if it exists, otherwise return empty string
-std::string    LAS::LASFile::other()    const { return (have_read && !_other.empty()) ? _other : ""; }
+std::string LASFile::other()    const { return (have_read && !_other.empty()) ? _other : ""; }
 // - return vector of Parameters if it is not empty, otherwise return empty vector
-std::vector<LAS::Parameter> LAS::LASFile::parameters() const
+std::vector<Parameter> LASFile::parameters() const
 {
-    std::vector<LAS::Parameter> out;
+    std::vector<Parameter> out;
     if (have_read && !_parameter.empty())
     {
         for (auto const& m : _parameter) out.push_back(m.second);
+        std::sort(out.begin(), out.end(), [](Parameter const& a, Parameter const& b){ return a.order < b.order; });
         return out;
     }
     else
         return out;
 }
 // - return vector of Parameters if it is not empty, otherwise return empty vector
-std::vector<LAS::Parameter> LAS::LASFile::curves() const
+std::vector<Parameter> LASFile::curves() const
 {
-    std::vector<LAS::Parameter> out;
+    std::vector<Parameter> out;
     if (have_read && !_curve.empty())
     {
         for (auto const& m : _curve)
             out.push_back(m.second);
+        std::sort(out.begin(), out.end(), [](Parameter const& a, Parameter const& b){ return a.order < b.order; });
         return out;
     }
     else
         return out;
 }
 // - return vector of index values if they exist, otherwise return empty vector
-std::vector<float> LAS::LASFile::index() const
+std::vector<float> LASFile::index() const
 {
     std::vector<float> out;
     if (have_read && !_data.empty())
@@ -291,8 +291,9 @@ std::vector<float> LAS::LASFile::index() const
     else
         return out;
 }
-// - return 2D vector of data values if they exist, otherwise return empty 2D vector
-std::vector<std::vector<float>> LAS::LASFile::data() const
+// - return m x n 2D vector of data values if they exist, otherwise return empty 2D vector
+//   n is number of curves, m is number of readings
+std::vector<std::vector<float>> LASFile::data() const
 {
     std::vector<std::vector<float>> out;
     if (have_read && !_data.empty())
